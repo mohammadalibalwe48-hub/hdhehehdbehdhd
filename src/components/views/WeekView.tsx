@@ -5,7 +5,7 @@ import { format, addDays, startOfWeek, isToday, isSameDay, parseISO } from 'date
 import { ar } from 'date-fns/locale';
 import { LessonCard } from '@/components/ui/LessonCard';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { LessonOccurrence, WEEKDAYS_AR_SHORT } from '@/types/lesson';
+import { LessonOccurrence, WEEKDAYS_AR } from '@/types/lesson';
 
 interface WeekViewProps {
   weekStart: Date;
@@ -123,7 +123,7 @@ export function WeekView({ weekStart, onWeekChange, occurrences, onLessonClick }
                   whileTap={{ scale: 0.95 }}
                 >
                   <span className="text-[10px] font-medium mb-1 opacity-70">
-                    {WEEKDAYS_AR_SHORT[dayIndex].label}
+                    {WEEKDAYS_AR[dayIndex].short}
                   </span>
                   <span className={`text-lg font-bold ${isSelected ? '' : ''}`}>
                     {format(date, 'd')}

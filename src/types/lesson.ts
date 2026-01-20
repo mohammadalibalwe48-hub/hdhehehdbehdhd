@@ -60,21 +60,11 @@ export interface LessonFormData {
 }
 
 export const WEEKDAYS_AR = [
-  { value: 0, label: 'الأحد' },
-  { value: 1, label: 'الاثنين' },
-  { value: 2, label: 'الثلاثاء' },
-  { value: 3, label: 'الأربعاء' },
-  { value: 4, label: 'الخميس' },
-  { value: 5, label: 'الجمعة' },
-  { value: 6, label: 'السبت' },
-];
-
-export const WEEKDAYS_AR_SHORT = [
-  { value: 0, label: 'أحد' },
-  { value: 1, label: 'اثن' },
-  { value: 2, label: 'ثلا' },
-  { value: 3, label: 'أرب' },
-  { value: 4, label: 'خمي' },
-  { value: 5, label: 'جمع' },
-  { value: 6, label: 'سبت' },
-];
+  { value: 0, label: 'الأحد', short: 'أحد' },
+  { value: 1, label: 'الاثنين', short: 'إثنين' },
+  { value: 2, label: 'الثلاثاء', short: 'ثلاثاء' },
+  { value: 3, label: 'الأربعاء', short: 'أربعاء' },
+  { value: 4, label: 'الخميس', short: 'خميس' },
+  { value: 5, label: 'الجمعة', short: 'جمعة' },
+  { value: 6, label: 'السبت', short: 'سبت' },
+] as const;
