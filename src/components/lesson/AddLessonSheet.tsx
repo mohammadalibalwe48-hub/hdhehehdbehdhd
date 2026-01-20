@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { LessonFormData, WEEKDAYS_AR } from '@/types/lesson';
 import { format } from 'date-fns';
-import { Check, Video, Building } from 'lucide-react';
+import { Check, Video, MapPin, Clock, Calendar, User, FileText, Link } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface AddLessonSheetProps {
@@ -31,6 +31,27 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Reset form when sheet opens with new data
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        title: initialData?.title || '',
+        teacherName: initialData?.teacherName || '',
+        weekdays: initialData?.weekdays || [],
+        startTime: initialData?.startTime || '',
+        endTime: initialData?.endTime || '',
+        hasEndTime: initialData?.hasEndTime ?? true,
+        startDate: initialData?.startDate || format(new Date(), 'yyyy-MM-dd'),
+        endDate: initialData?.endDate || '',
+        hasEndDate: initialData?.hasEndDate ?? false,
+        locationType: initialData?.locationType || 'online',
+        locationDetails: initialData?.locationDetails || '',
+        notes: initialData?.notes || '',
+      });
+      setErrors({});
+    }
+  }, [isOpen, initialData]);
+
   const toggleWeekday = (day: number) => {
     setFormData(prev => ({
       ...prev,
@@ -38,6 +59,10 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
         ? prev.weekdays.filter(d => d !== day)
         : [...prev.weekdays, day].sort(),
     }));
+    // Clear weekdays error when user selects a day
+    if (errors.weekdays) {
+      setErrors(prev => ({ ...prev, weekdays: '' }));
+    }
   };
 
   const validate = (): boolean => {
@@ -61,21 +86,6 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
     if (validate()) {
       onSubmit(formData);
       onClose();
-      // Reset form
-      setFormData({
-        title: '',
-        teacherName: '',
-        weekdays: [],
-        startTime: '',
-        endTime: '',
-        hasEndTime: true,
-        startDate: format(new Date(), 'yyyy-MM-dd'),
-        endDate: '',
-        hasEndDate: false,
-        locationType: 'online',
-        locationDetails: '',
-        notes: '',
-      });
     }
   };
 
@@ -83,201 +93,247 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'تعديل الدرس' : 'إضافة درس جديد'}
+      title={isEditing ? 'تعديل الدرس' : 'درس جديد ✨'}
     >
-      <div className="px-5 py-4 space-y-5">
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            اسم الدرس / المادة <span className="text-destructive">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            className="input-premium"
-            placeholder="مثال: الرياضيات"
-          />
-          {errors.title && (
-            <p className="text-destructive text-xs mt-1">{errors.title}</p>
-          )}
+      <div className="px-5 py-2 pb-8 space-y-6">
+        {/* Title & Teacher Section */}
+        <div className="space-y-4">
+          {/* Lesson Title */}
+          <div>
+            <label className="form-label form-label-required">
+              اسم الدرس
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, title: e.target.value }));
+                  if (errors.title) setErrors(prev => ({ ...prev, title: '' }));
+                }}
+                className="input-premium pr-12"
+                placeholder="مثال: الرياضيات"
+              />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <FileText className="w-5 h-5 text-muted-foreground/40" />
+              </div>
+            </div>
+            {errors.title && <p className="form-error">{errors.title}</p>}
+          </div>
+
+          {/* Teacher Name */}
+          <div>
+            <label className="form-label">
+              اسم المدرّس
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.teacherName}
+                onChange={(e) => setFormData(prev => ({ ...prev, teacherName: e.target.value }))}
+                className="input-premium pr-12"
+                placeholder="مثال: أ. محمد أحمد"
+              />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <User className="w-5 h-5 text-muted-foreground/40" />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Teacher Name */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            اسم المدرّس (اختياري)
-          </label>
-          <input
-            type="text"
-            value={formData.teacherName}
-            onChange={(e) => setFormData(prev => ({ ...prev, teacherName: e.target.value }))}
-            className="input-premium"
-            placeholder="مثال: أ. محمد"
-          />
-        </div>
+        {/* Divider */}
+        <div className="h-px bg-border/60" />
 
-        {/* Weekdays */}
+        {/* Weekdays Section */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            الأيام <span className="text-destructive">*</span>
+          <label className="form-label form-label-required mb-3">
+            أيام الدرس
           </label>
-          <div className="flex flex-wrap gap-2">
-            {WEEKDAYS_AR.map((day) => (
+          <div className="grid grid-cols-4 gap-2">
+            {WEEKDAYS_AR.map((day, index) => (
               <motion.button
                 key={day.value}
                 type="button"
                 onClick={() => toggleWeekday(day.value)}
                 className={`day-chip ${formData.weekdays.includes(day.value) ? 'selected' : ''}`}
                 whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.03 }}
               >
-                {day.label}
-                {formData.weekdays.includes(day.value) && (
-                  <Check className="w-3.5 h-3.5 mr-1 inline" />
-                )}
+                <span className="flex items-center justify-center gap-1">
+                  {day.short}
+                  {formData.weekdays.includes(day.value) && (
+                    <Check className="w-3.5 h-3.5" />
+                  )}
+                </span>
               </motion.button>
             ))}
           </div>
-          {errors.weekdays && (
-            <p className="text-destructive text-xs mt-1">{errors.weekdays}</p>
-          )}
+          {errors.weekdays && <p className="form-error">{errors.weekdays}</p>}
         </div>
 
-        {/* Time */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              وقت البداية <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="time"
-              value={formData.startTime}
-              onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-              className="input-premium"
-            />
-            {errors.startTime && (
-              <p className="text-destructive text-xs mt-1">{errors.startTime}</p>
-            )}
+        {/* Time Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">الوقت</span>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              وقت النهاية
-            </label>
-            <input
-              type="time"
-              value={formData.endTime}
-              onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-              className="input-premium"
-              disabled={!formData.hasEndTime}
-            />
+          
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="form-label form-label-required text-xs">
+                البداية
+              </label>
+              <input
+                type="time"
+                value={formData.startTime}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, startTime: e.target.value }));
+                  if (errors.startTime) setErrors(prev => ({ ...prev, startTime: '' }));
+                }}
+                className="input-premium text-center"
+                dir="ltr"
+              />
+              {errors.startTime && <p className="form-error">{errors.startTime}</p>}
+            </div>
+            <div>
+              <label className="form-label text-xs">
+                النهاية
+              </label>
+              <input
+                type="time"
+                value={formData.endTime}
+                onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                className="input-premium text-center"
+                dir="ltr"
+                disabled={!formData.hasEndTime}
+              />
+            </div>
           </div>
+          
+          <label className="flex items-center gap-3 cursor-pointer py-1">
+            <input
+              type="checkbox"
+              checked={!formData.hasEndTime}
+              onChange={(e) => setFormData(prev => ({ ...prev, hasEndTime: !e.target.checked, endTime: '' }))}
+              className="checkbox-premium"
+            />
+            <span className="text-sm text-muted-foreground">بدون وقت نهاية</span>
+          </label>
         </div>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={!formData.hasEndTime}
-            onChange={(e) => setFormData(prev => ({ ...prev, hasEndTime: !e.target.checked, endTime: '' }))}
-            className="rounded border-border text-primary focus:ring-primary"
-          />
-          بدون وقت نهاية
-        </label>
 
-        {/* Dates */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              تاريخ البداية
-            </label>
-            <input
-              type="date"
-              value={formData.startDate}
-              onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-              className="input-premium"
-            />
+        {/* Date Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">التاريخ</span>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              تاريخ النهاية
-            </label>
-            <input
-              type="date"
-              value={formData.endDate}
-              onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-              className="input-premium"
-              disabled={!formData.hasEndDate}
-            />
+          
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="form-label text-xs">
+                تاريخ البداية
+              </label>
+              <input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                className="input-premium text-center"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="form-label text-xs">
+                تاريخ النهاية
+              </label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                className="input-premium text-center"
+                dir="ltr"
+                disabled={!formData.hasEndDate}
+              />
+            </div>
           </div>
+          
+          <label className="flex items-center gap-3 cursor-pointer py-1">
+            <input
+              type="checkbox"
+              checked={!formData.hasEndDate}
+              onChange={(e) => setFormData(prev => ({ ...prev, hasEndDate: !e.target.checked, endDate: '' }))}
+              className="checkbox-premium"
+            />
+            <span className="text-sm text-muted-foreground">بدون تاريخ نهاية (مستمر)</span>
+          </label>
         </div>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={!formData.hasEndDate}
-            onChange={(e) => setFormData(prev => ({ ...prev, hasEndDate: !e.target.checked, endDate: '' }))}
-            className="rounded border-border text-primary focus:ring-primary"
-          />
-          بدون نهاية
-        </label>
 
-        {/* Location Type */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            المكان
+        {/* Divider */}
+        <div className="h-px bg-border/60" />
+
+        {/* Location Section */}
+        <div className="space-y-4">
+          <label className="form-label">
+            نوع الحضور
           </label>
           <div className="grid grid-cols-2 gap-3">
             <motion.button
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, locationType: 'online' }))}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl border-2 transition-all ${
-                formData.locationType === 'online'
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground'
-              }`}
+              className={`location-btn ${formData.locationType === 'online' ? 'selected online' : ''}`}
               whileTap={{ scale: 0.98 }}
             >
               <Video className="w-5 h-5" />
-              <span className="font-medium">أونلاين</span>
+              <span>أونلاين</span>
             </motion.button>
             <motion.button
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, locationType: 'in_person' }))}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl border-2 transition-all ${
-                formData.locationType === 'in_person'
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground'
-              }`}
+              className={`location-btn ${formData.locationType === 'in_person' ? 'selected in-person' : ''}`}
               whileTap={{ scale: 0.98 }}
             >
-              <Building className="w-5 h-5" />
-              <span className="font-medium">حضوري</span>
+              <MapPin className="w-5 h-5" />
+              <span>حضوري</span>
             </motion.button>
           </div>
         </div>
 
         {/* Location Details */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            تفاصيل المكان (اختياري)
+          <label className="form-label">
+            {formData.locationType === 'online' ? 'رابط الاجتماع' : 'العنوان'}
           </label>
-          <input
-            type="text"
-            value={formData.locationDetails}
-            onChange={(e) => setFormData(prev => ({ ...prev, locationDetails: e.target.value }))}
-            className="input-premium"
-            placeholder={formData.locationType === 'online' ? 'رابط الاجتماع...' : 'العنوان...'}
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={formData.locationDetails}
+              onChange={(e) => setFormData(prev => ({ ...prev, locationDetails: e.target.value }))}
+              className="input-premium pr-12"
+              placeholder={formData.locationType === 'online' ? 'رابط الزوم أو جوجل ميت...' : 'المبنى، الغرفة...'}
+              dir={formData.locationType === 'online' ? 'ltr' : 'rtl'}
+            />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+              {formData.locationType === 'online' ? (
+                <Link className="w-5 h-5 text-muted-foreground/40" />
+              ) : (
+                <MapPin className="w-5 h-5 text-muted-foreground/40" />
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            ملاحظات (اختياري)
+          <label className="form-label">
+            ملاحظات
           </label>
           <textarea
             value={formData.notes}
             onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
             className="input-premium resize-none"
             rows={3}
-            placeholder="أي ملاحظات إضافية..."
+            placeholder="أي ملاحظات تريد تذكرها..."
           />
         </div>
 
@@ -285,10 +341,10 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
         <motion.button
           type="button"
           onClick={handleSubmit}
-          className="w-full btn-primary py-4 rounded-xl text-lg font-bold"
+          className="w-full btn-primary py-4 rounded-2xl text-lg font-bold mt-4"
           whileTap={{ scale: 0.98 }}
         >
-          {isEditing ? 'حفظ التغييرات' : 'إضافة الدرس'}
+          {isEditing ? 'حفظ التغييرات ✓' : 'إضافة الدرس ✨'}
         </motion.button>
       </div>
     </BottomSheet>
