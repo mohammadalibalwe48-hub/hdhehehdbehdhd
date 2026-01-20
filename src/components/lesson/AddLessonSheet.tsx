@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { LessonFormData, WEEKDAYS_AR } from '@/types/lesson';
+import { useTeacherSuggestions } from '@/hooks/useTeacherSuggestions';
 import { format } from 'date-fns';
-import { Check, Video, MapPin, Clock, Calendar, User, FileText, Link } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Check, Video, MapPin, Clock, Calendar, User, FileText, Link, ChevronDown, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddLessonSheetProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface AddLessonSheetProps {
 }
 
 export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditing }: AddLessonSheetProps) {
+  const { getSuggestions } = useTeacherSuggestions();
   const [formData, setFormData] = useState<LessonFormData>({
     title: initialData?.title || '',
     teacherName: initialData?.teacherName || '',
@@ -30,6 +32,9 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showTeacherSuggestions, setShowTeacherSuggestions] = useState(false);
+  const [teacherSuggestions, setTeacherSuggestions] = useState<string[]>([]);
+  const teacherInputRef = useRef<HTMLInputElement>(null);
 
   // Reset form when sheet opens with new data
   useEffect(() => {
@@ -49,8 +54,15 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
         notes: initialData?.notes || '',
       });
       setErrors({});
+      setShowTeacherSuggestions(false);
     }
   }, [isOpen, initialData]);
+
+  // Update teacher suggestions when input changes
+  useEffect(() => {
+    const suggestions = getSuggestions(formData.teacherName);
+    setTeacherSuggestions(suggestions);
+  }, [formData.teacherName, getSuggestions]);
 
   const toggleWeekday = (day: number) => {
     setFormData(prev => ({
@@ -89,13 +101,19 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
     }
   };
 
+  const selectTeacher = (name: string) => {
+    setFormData(prev => ({ ...prev, teacherName: name }));
+    setShowTeacherSuggestions(false);
+    teacherInputRef.current?.blur();
+  };
+
   return (
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? 'تعديل الدرس' : 'درس جديد ✨'}
     >
-      <div className="px-5 py-2 pb-8 space-y-6">
+      <div className="px-5 py-2 pb-8 space-y-5">
         {/* Title & Teacher Section */}
         <div className="space-y-4">
           {/* Lesson Title */}
@@ -121,52 +139,102 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
             {errors.title && <p className="form-error">{errors.title}</p>}
           </div>
 
-          {/* Teacher Name */}
-          <div>
-            <label className="form-label">
+          {/* Teacher Name with Suggestions */}
+          <div className="relative">
+            <label className="form-label flex items-center gap-1.5">
               اسم المدرّس
+              {teacherSuggestions.length > 0 && (
+                <span className="text-xs text-primary flex items-center gap-0.5">
+                  <Sparkles className="w-3 h-3" />
+                  اقتراحات
+                </span>
+              )}
             </label>
             <div className="relative">
               <input
+                ref={teacherInputRef}
                 type="text"
                 value={formData.teacherName}
                 onChange={(e) => setFormData(prev => ({ ...prev, teacherName: e.target.value }))}
+                onFocus={() => setShowTeacherSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowTeacherSuggestions(false), 200)}
                 className="input-premium pr-12"
                 placeholder="مثال: أ. محمد أحمد"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2">
                 <User className="w-5 h-5 text-muted-foreground/40" />
               </div>
+              {teacherSuggestions.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowTeacherSuggestions(!showTeacherSuggestions)}
+                  className="absolute left-4 top-1/2 -translate-y-1/2"
+                >
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showTeacherSuggestions ? 'rotate-180' : ''}`} />
+                </button>
+              )}
             </div>
+
+            {/* Teacher Suggestions Dropdown */}
+            <AnimatePresence>
+              {showTeacherSuggestions && teacherSuggestions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute z-50 top-full mt-1 w-full bg-card border border-border rounded-xl shadow-medium overflow-hidden"
+                >
+                  {teacherSuggestions.map((name, index) => (
+                    <motion.button
+                      key={name}
+                      type="button"
+                      onClick={() => selectTeacher(name)}
+                      className="w-full px-4 py-3 text-right hover:bg-muted/50 flex items-center gap-2 transition-colors border-b border-border/50 last:border-0"
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                    >
+                      <User className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-medium text-foreground">{name}</span>
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-border/60" />
+        <div className="h-px bg-gradient-to-l from-transparent via-border to-transparent" />
 
         {/* Weekdays Section */}
         <div>
           <label className="form-label form-label-required mb-3">
             أيام الدرس
           </label>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-7 gap-1.5">
             {WEEKDAYS_AR.map((day, index) => (
               <motion.button
                 key={day.value}
                 type="button"
                 onClick={() => toggleWeekday(day.value)}
-                className={`day-chip ${formData.weekdays.includes(day.value) ? 'selected' : ''}`}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, y: 10 }}
+                className={`day-chip-compact ${formData.weekdays.includes(day.value) ? 'selected' : ''}`}
+                whileTap={{ scale: 0.92 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
+                transition={{ delay: index * 0.02 }}
               >
-                <span className="flex items-center justify-center gap-1">
-                  {day.short}
-                  {formData.weekdays.includes(day.value) && (
-                    <Check className="w-3.5 h-3.5" />
-                  )}
-                </span>
+                <span className="text-xs font-semibold">{day.short}</span>
+                {formData.weekdays.includes(day.value) && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-accent flex items-center justify-center"
+                  >
+                    <Check className="w-2.5 h-2.5 text-accent-foreground" />
+                  </motion.div>
+                )}
               </motion.button>
             ))}
           </div>
@@ -174,17 +242,17 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
         </div>
 
         {/* Time Section */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-4 h-4 text-primary" />
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Clock className="w-4 h-4 text-primary" />
+            </div>
             <span className="text-sm font-semibold text-foreground">الوقت</span>
           </div>
           
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="form-label form-label-required text-xs">
-                البداية
-              </label>
+              <label className="form-label form-label-required text-xs">البداية</label>
               <input
                 type="time"
                 value={formData.startTime}
@@ -192,20 +260,18 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
                   setFormData(prev => ({ ...prev, startTime: e.target.value }));
                   if (errors.startTime) setErrors(prev => ({ ...prev, startTime: '' }));
                 }}
-                className="input-premium text-center"
+                className="input-premium text-center text-sm"
                 dir="ltr"
               />
               {errors.startTime && <p className="form-error">{errors.startTime}</p>}
             </div>
             <div>
-              <label className="form-label text-xs">
-                النهاية
-              </label>
+              <label className="form-label text-xs">النهاية</label>
               <input
                 type="time"
                 value={formData.endTime}
                 onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                className="input-premium text-center"
+                className="input-premium text-center text-sm"
                 dir="ltr"
                 disabled={!formData.hasEndTime}
               />
@@ -224,34 +290,32 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
         </div>
 
         {/* Date Section */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-4 h-4 text-primary" />
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-accent" />
+            </div>
             <span className="text-sm font-semibold text-foreground">التاريخ</span>
           </div>
           
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="form-label text-xs">
-                تاريخ البداية
-              </label>
+              <label className="form-label text-xs">تاريخ البداية</label>
               <input
                 type="date"
                 value={formData.startDate}
                 onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                className="input-premium text-center"
+                className="input-premium text-center text-sm"
                 dir="ltr"
               />
             </div>
             <div>
-              <label className="form-label text-xs">
-                تاريخ النهاية
-              </label>
+              <label className="form-label text-xs">تاريخ النهاية</label>
               <input
                 type="date"
                 value={formData.endDate}
                 onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                className="input-premium text-center"
+                className="input-premium text-center text-sm"
                 dir="ltr"
                 disabled={!formData.hasEndDate}
               />
@@ -270,19 +334,17 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-border/60" />
+        <div className="h-px bg-gradient-to-l from-transparent via-border to-transparent" />
 
         {/* Location Section */}
-        <div className="space-y-4">
-          <label className="form-label">
-            نوع الحضور
-          </label>
+        <div className="space-y-3">
+          <label className="form-label">نوع الحضور</label>
           <div className="grid grid-cols-2 gap-3">
             <motion.button
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, locationType: 'online' }))}
               className={`location-btn ${formData.locationType === 'online' ? 'selected online' : ''}`}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.97 }}
             >
               <Video className="w-5 h-5" />
               <span>أونلاين</span>
@@ -291,7 +353,7 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, locationType: 'in_person' }))}
               className={`location-btn ${formData.locationType === 'in_person' ? 'selected in-person' : ''}`}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.97 }}
             >
               <MapPin className="w-5 h-5" />
               <span>حضوري</span>
@@ -325,14 +387,12 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
 
         {/* Notes */}
         <div>
-          <label className="form-label">
-            ملاحظات
-          </label>
+          <label className="form-label">ملاحظات</label>
           <textarea
             value={formData.notes}
             onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
             className="input-premium resize-none"
-            rows={3}
+            rows={2}
             placeholder="أي ملاحظات تريد تذكرها..."
           />
         </div>
@@ -341,10 +401,12 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
         <motion.button
           type="button"
           onClick={handleSubmit}
-          className="w-full btn-primary py-4 rounded-2xl text-lg font-bold mt-4"
+          className="w-full btn-primary py-4 rounded-2xl text-lg font-bold mt-4 relative overflow-hidden"
           whileTap={{ scale: 0.98 }}
         >
-          {isEditing ? 'حفظ التغييرات ✓' : 'إضافة الدرس ✨'}
+          <span className="relative z-10">
+            {isEditing ? 'حفظ التغييرات ✓' : 'إضافة الدرس ✨'}
+          </span>
         </motion.button>
       </div>
     </BottomSheet>

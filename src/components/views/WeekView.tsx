@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { format, addDays, startOfWeek, isToday, isSameDay, parseISO } from 'date-fns';
+import { ChevronRight, ChevronLeft, Calendar } from 'lucide-react';
+import { format, addDays, isToday, isSameDay } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { LessonCard } from '@/components/ui/LessonCard';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -62,33 +62,40 @@ export function WeekView({ weekStart, onWeekChange, occurrences, onLessonClick }
   return (
     <div className="flex flex-col h-full">
       {/* Week Header */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between mb-4">
-          <button
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-center justify-between">
+          <motion.button
             onClick={() => {
               setDirection(1);
               onWeekChange('next');
             }}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
+            className="p-2.5 rounded-xl hover:bg-muted transition-colors"
+            whileTap={{ scale: 0.9 }}
           >
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </button>
-          <h2 className="text-lg font-bold text-foreground">{formatWeekRange()}</h2>
-          <button
+          </motion.button>
+          
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary" />
+            <h2 className="text-base font-bold text-foreground">{formatWeekRange()}</h2>
+          </div>
+          
+          <motion.button
             onClick={() => {
               setDirection(-1);
               onWeekChange('prev');
             }}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
+            className="p-2.5 rounded-xl hover:bg-muted transition-colors"
+            whileTap={{ scale: 0.9 }}
           >
             <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-          </button>
+          </motion.button>
         </div>
       </div>
 
       {/* Week Calendar */}
       <motion.div
-        className="px-4"
+        className="px-3"
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.2}
@@ -101,39 +108,50 @@ export function WeekView({ weekStart, onWeekChange, occurrences, onLessonClick }
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: direction * -50 }}
             transition={{ duration: 0.2 }}
-            className="grid grid-cols-7 gap-1"
+            className="grid grid-cols-7 gap-1.5 p-2 bg-muted/30 rounded-2xl"
           >
-            {weekDays.map((date) => {
+            {weekDays.map((date, index) => {
               const isSelected = isSameDay(date, selectedDate);
               const isTodayDate = isToday(date);
               const hasLessonsForDay = hasLessons(date);
               const dayIndex = date.getDay();
+              const lessonCount = getOccurrencesForDate(date).length;
 
               return (
                 <motion.button
                   key={date.toISOString()}
                   onClick={() => setSelectedDate(date)}
-                  className={`relative flex flex-col items-center py-2 px-1 rounded-xl transition-all ${
+                  className={`relative flex flex-col items-center py-2.5 px-0.5 rounded-xl transition-all ${
                     isSelected
-                      ? 'bg-primary text-primary-foreground shadow-medium'
+                      ? 'bg-primary text-primary-foreground shadow-button'
                       : isTodayDate
-                      ? 'bg-primary/10 text-primary'
+                      ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
                       : 'text-foreground hover:bg-muted'
                   }`}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.92 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.03 }}
                 >
-                  <span className="text-[10px] font-medium mb-1 opacity-70">
+                  <span className={`text-[10px] font-medium mb-0.5 ${isSelected ? 'opacity-80' : 'opacity-60'}`}>
                     {WEEKDAYS_AR[dayIndex].short}
                   </span>
-                  <span className={`text-lg font-bold ${isSelected ? '' : ''}`}>
+                  <span className={`text-lg font-bold leading-none ${isSelected ? '' : ''}`}>
                     {format(date, 'd')}
                   </span>
+                  
+                  {/* Lesson indicator */}
                   {hasLessonsForDay && (
-                    <div
-                      className={`absolute bottom-1 w-1.5 h-1.5 rounded-full ${
-                        isSelected ? 'bg-primary-foreground' : 'bg-accent'
-                      }`}
-                    />
+                    <div className="flex gap-0.5 mt-1.5">
+                      {Array.from({ length: Math.min(lessonCount, 3) }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`w-1 h-1 rounded-full ${
+                            isSelected ? 'bg-primary-foreground/70' : 'bg-accent'
+                          }`}
+                        />
+                      ))}
+                    </div>
                   )}
                 </motion.button>
               );
@@ -144,9 +162,16 @@ export function WeekView({ weekStart, onWeekChange, occurrences, onLessonClick }
 
       {/* Selected Day Header */}
       <div className="px-4 pt-4 pb-2">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          تفاصيل يوم {format(selectedDate, 'EEEE، d MMMM', { locale: ar })}
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            {format(selectedDate, 'EEEE، d MMMM', { locale: ar })}
+          </h3>
+          {selectedDateOccurrences.length > 0 && (
+            <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              {selectedDateOccurrences.length} {selectedDateOccurrences.length === 1 ? 'درس' : 'دروس'}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Lessons List */}
@@ -157,7 +182,18 @@ export function WeekView({ weekStart, onWeekChange, occurrences, onLessonClick }
             message={isToday(selectedDate) ? 'لا توجد دروس اليوم' : 'لا توجد دروس في هذا اليوم'}
           />
         ) : (
-          <div className="space-y-3">
+          <motion.div 
+            className="space-y-3"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: {
+                transition: {
+                  staggerChildren: 0.05,
+                },
+              },
+            }}
+          >
             {selectedDateOccurrences.map((occurrence, index) => (
               <LessonCard
                 key={`${occurrence.lessonId}-${occurrence.date}-${index}`}
@@ -165,7 +201,7 @@ export function WeekView({ weekStart, onWeekChange, occurrences, onLessonClick }
                 onClick={() => onLessonClick(occurrence)}
               />
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

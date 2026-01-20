@@ -458,6 +458,28 @@
     box-shadow: 0 0 4px hsl(var(--accent));
   }
 
+  /* Compact Day Chip for 7-column grid */
+  .day-chip-compact {
+    @apply relative px-2 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center;
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .day-chip-compact:hover {
+    background: hsl(var(--secondary-foreground) / 0.12);
+  }
+
+  .day-chip-compact.selected {
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+    box-shadow: var(--shadow-button);
+  }
+
+  /* Shadow button utility */
+  .shadow-button {
+    box-shadow: var(--shadow-button);
+  }
+
   /* ─────────────────────────────────────────────────────────────
      Premium Input Fields
   ───────────────────────────────────────────────────────────── */
