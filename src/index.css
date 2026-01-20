@@ -1,88 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Premium Arabic RTL Lesson Scheduler Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core Brand Colors - Teal/Emerald with Gold Accent */
+    --background: 180 15% 98%;
+    --foreground: 200 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 200 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 200 25% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep Teal */
+    --primary: 173 58% 39%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Soft Teal */
+    --secondary: 173 30% 94%;
+    --secondary-foreground: 173 58% 30%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted - Subtle Gray-Teal */
+    --muted: 180 15% 95%;
+    --muted-foreground: 200 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Warm Gold */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 180 15% 90%;
+    --input: 180 15% 90%;
+    --ring: 173 58% 39%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
+
+    /* Custom Premium Tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(173 58% 39%), hsl(173 58% 30%));
+    --gradient-accent: linear-gradient(135deg, hsl(38 92% 55%), hsl(38 92% 45%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(180 15% 98%));
+    --gradient-glass: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+    
+    --shadow-soft: 0 4px 20px -4px hsla(200, 25%, 15%, 0.08);
+    --shadow-medium: 0 8px 30px -6px hsla(200, 25%, 15%, 0.12);
+    --shadow-strong: 0 12px 40px -8px hsla(200, 25%, 15%, 0.18);
+    --shadow-fab: 0 8px 30px -4px hsla(173, 58%, 39%, 0.4);
+    --shadow-card: 0 2px 16px -2px hsla(200, 25%, 15%, 0.06);
+    
+    /* Glass morphism */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-blur: 20px;
+
+    /* Status Colors */
+    --success: 152 69% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 200 25% 8%;
+    --foreground: 180 15% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 200 25% 12%;
+    --card-foreground: 180 15% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 200 25% 12%;
+    --popover-foreground: 180 15% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 173 58% 50%;
+    --primary-foreground: 200 25% 8%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 200 25% 18%;
+    --secondary-foreground: 173 58% 70%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 200 25% 15%;
+    --muted-foreground: 180 15% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 38 92% 55%;
+    --accent-foreground: 200 25% 8%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 200 25% 18%;
+    --input: 200 25% 18%;
+    --ring: 173 58% 50%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(173 58% 50%), hsl(173 58% 40%));
+    --gradient-accent: linear-gradient(135deg, hsl(38 92% 60%), hsl(38 92% 50%));
+    --gradient-card: linear-gradient(145deg, hsl(200 25% 14%), hsl(200 25% 10%));
+    --gradient-glass: linear-gradient(145deg, rgba(30,40,50,0.9), rgba(30,40,50,0.7));
+    
+    --shadow-soft: 0 4px 20px -4px hsla(0, 0%, 0%, 0.3);
+    --shadow-medium: 0 8px 30px -6px hsla(0, 0%, 0%, 0.4);
+    --shadow-strong: 0 12px 40px -8px hsla(0, 0%, 0%, 0.5);
+    --shadow-fab: 0 8px 30px -4px hsla(173, 58%, 50%, 0.3);
+    --shadow-card: 0 2px 16px -2px hsla(0, 0%, 0%, 0.2);
+    
+    --glass-bg: rgba(30, 40, 50, 0.85);
+    --glass-border: rgba(50, 60, 70, 0.5);
+
+    --success: 152 69% 50%;
+    --warning: 38 92% 55%;
+    --info: 199 89% 55%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -99,7 +141,175 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    direction: rtl;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Tajawal', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Safe area padding for mobile */
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  }
+
+  .safe-area-top {
+    padding-top: max(env(safe-area-inset-top), 16px);
+  }
+}
+
+@layer components {
+  /* Premium Glass Card */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+  }
+
+  /* Premium Button Variants */
+  .btn-primary {
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+    box-shadow: var(--shadow-medium);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-strong);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  /* FAB Styling */
+  .fab {
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-fab);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .fab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 40px -4px hsla(173, 58%, 39%, 0.5);
+  }
+
+  .fab:active {
+    transform: scale(0.95);
+  }
+
+  /* Lesson Card */
+  .lesson-card {
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-card);
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: var(--radius);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .lesson-card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+  }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border-top: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* Bottom Sheet */
+  .bottom-sheet-overlay {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+  }
+
+  .bottom-sheet-content {
+    background: hsl(var(--background));
+    border-radius: 1.5rem 1.5rem 0 0;
+    box-shadow: 0 -10px 40px -5px hsla(0, 0%, 0%, 0.15);
+  }
+
+  /* Day Chip */
+  .day-chip {
+    @apply px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200;
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .day-chip.selected {
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+    box-shadow: var(--shadow-soft);
+  }
+
+  .day-chip.today {
+    border: 2px solid hsl(var(--primary));
+  }
+
+  .day-chip.has-lessons::after {
+    content: '';
+    @apply absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full;
+    background: hsl(var(--accent));
+  }
+
+  /* Input styling */
+  .input-premium {
+    @apply w-full px-4 py-3 rounded-xl border transition-all duration-200;
+    background: hsl(var(--muted) / 0.5);
+    border-color: hsl(var(--border));
+  }
+
+  .input-premium:focus {
+    @apply outline-none ring-2;
+    ring-color: hsl(var(--primary) / 0.3);
+    border-color: hsl(var(--primary));
+  }
+
+  /* Week Swiper */
+  .week-view {
+    touch-action: pan-x;
+  }
+
+  /* Empty State */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-12 text-center;
+  }
+
+  .empty-state-icon {
+    @apply w-24 h-24 mb-4 opacity-30;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Toast */
+  .toast-premium {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: var(--shadow-medium);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
