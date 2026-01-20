@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLessons } from '@/hooks/useLessons';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { FAB } from '@/components/ui/FAB';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { WeekView } from '@/components/views/WeekView';
 import { ListView } from '@/components/views/ListView';
 import { AddLessonSheet } from '@/components/lesson/AddLessonSheet';
@@ -183,26 +184,40 @@ export function HomePage() {
   const displayName = user?.user_metadata?.username || user?.email?.split('@')[0] || 'المستخدم';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto relative">
+    <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-primary/5 blur-3xl -z-10" />
+      <div className="absolute bottom-40 left-0 w-60 h-60 rounded-full bg-accent/5 blur-3xl -z-10" />
+
       {/* Premium Header */}
       <header className="sticky top-0 z-40 glass-card border-b border-border/40 safe-area-top">
-        <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl fab flex items-center justify-center">
+            <motion.div 
+              className="w-11 h-11 rounded-2xl fab flex items-center justify-center"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <BookOpen className="w-5 h-5 text-primary-foreground" strokeWidth={2} />
-            </div>
+            </motion.div>
             <div>
               <h1 className="text-lg font-bold text-foreground leading-tight">جدول دروسي</h1>
-              <p className="text-xs text-muted-foreground">أهلاً {displayName} 👋</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                أهلاً {displayName} 
+                <Sparkles className="w-3 h-3 text-accent" />
+              </p>
             </div>
           </div>
-          <motion.button
-            onClick={handleSignOut}
-            className="p-2.5 rounded-xl hover:bg-muted transition-colors"
-            whileTap={{ scale: 0.95 }}
-          >
-            <LogOut className="w-5 h-5 text-muted-foreground" />
-          </motion.button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <motion.button
+              onClick={handleSignOut}
+              className="p-2.5 rounded-xl hover:bg-destructive/10 transition-colors group"
+              whileTap={{ scale: 0.95 }}
+            >
+              <LogOut className="w-5 h-5 text-muted-foreground group-hover:text-destructive transition-colors" />
+            </motion.button>
+          </div>
         </div>
       </header>
 
