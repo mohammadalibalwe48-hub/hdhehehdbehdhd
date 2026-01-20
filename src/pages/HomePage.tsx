@@ -54,13 +54,6 @@ export function HomePage() {
     setShowDetailsSheet(true);
   };
 
-  // Handle click from ListView (which uses Lesson objects)
-  const handleLessonFromListClick = (lesson: Lesson) => {
-    // For list view, we edit the entire lesson (all occurrences)
-    setEditingLesson({ lesson, type: 'all', date: '' });
-    setShowAddSheet(true);
-  };
-
   const handleEdit = (type: 'single' | 'all') => {
     if (!selectedOccurrence) return;
     
@@ -224,8 +217,8 @@ export function HomePage() {
           />
         ) : (
           <ListView
-            lessons={lessons}
-            onLessonClick={handleLessonFromListClick}
+            occurrences={occurrences}
+            onLessonClick={handleLessonClick}
           />
         )}
       </main>

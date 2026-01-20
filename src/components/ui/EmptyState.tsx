@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { CalendarX, BookOpen } from 'lucide-react';
 
 interface EmptyStateProps {
-  type: 'no-lessons' | 'no-lessons-today' | 'list' | 'week' | 'day';
+  type: 'no-lessons' | 'no-lessons-today';
   message?: string;
 }
 
@@ -17,21 +17,6 @@ export function EmptyState({ type, message }: EmptyStateProps) {
       icon: CalendarX,
       title: 'لا توجد دروس اليوم',
       description: message || 'يوم فارغ! استمتع بوقتك',
-    },
-    'list': {
-      icon: BookOpen,
-      title: 'لا توجد دروس مسجّلة',
-      description: message || 'أضف درسك الأول بالضغط على زر +',
-    },
-    'week': {
-      icon: CalendarX,
-      title: 'لا توجد دروس هذا الأسبوع',
-      description: message || 'اختر أسبوعًا آخر أو أضف درسًا جديدًا',
-    },
-    'day': {
-      icon: CalendarX,
-      title: 'لا توجد دروس في هذا اليوم',
-      description: message || 'اختر يومًا آخر',
     },
   };
 
