@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { startOfWeek, addWeeks, subWeeks } from 'date-fns';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, BookOpen, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLessons } from '@/hooks/useLessons';
 import { BottomNav } from '@/components/ui/BottomNav';
@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 type Tab = 'week' | 'list';
 
 export function HomePage() {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const {
     lessons,
     isLoading,
@@ -105,7 +105,6 @@ export function HomePage() {
             action: {
               label: 'تراجع',
               onClick: () => {
-                // In a real app, you'd restore from a backup
                 toast.info('عذرًا، لا يمكن التراجع حاليًا');
               },
             },
@@ -124,7 +123,6 @@ export function HomePage() {
             action: {
               label: 'تراجع',
               onClick: () => {
-                // In a real app, you'd restore from a backup
                 toast.info('عذرًا، لا يمكن التراجع حاليًا');
               },
             },
@@ -181,21 +179,35 @@ export function HomePage() {
     toast.success('تم تسجيل الخروج');
   };
 
+  // Extract username from email
+  const displayName = user?.user_metadata?.username || user?.email?.split('@')[0] || 'المستخدم';
+
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 safe-area-top">
-        <h1 className="text-xl font-bold text-foreground">جدول الدروس</h1>
-        <button
-          onClick={handleSignOut}
-          className="p-2 rounded-full hover:bg-muted transition-colors"
-        >
-          <LogOut className="w-5 h-5 text-muted-foreground" />
-        </button>
+    <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto relative">
+      {/* Premium Header */}
+      <header className="sticky top-0 z-40 glass-card border-b border-border/40 safe-area-top">
+        <div className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl fab flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-primary-foreground" strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-foreground leading-tight">جدول دروسي</h1>
+              <p className="text-xs text-muted-foreground">أهلاً {displayName} 👋</p>
+            </div>
+          </div>
+          <motion.button
+            onClick={handleSignOut}
+            className="p-2.5 rounded-xl hover:bg-muted transition-colors"
+            whileTap={{ scale: 0.95 }}
+          >
+            <LogOut className="w-5 h-5 text-muted-foreground" />
+          </motion.button>
+        </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-hidden pb-24">
         {activeTab === 'week' ? (
           <WeekView
             weekStart={weekStart}
