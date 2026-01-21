@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Calendar, List } from 'lucide-react';
 
 type Tab = 'week' | 'list';
@@ -22,34 +21,20 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           const Icon = tab.icon;
 
           return (
-            <motion.button
+            <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`relative flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl transition-all flex-1 ${
+              className={`relative flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl transition-colors flex-1 active:scale-95 ${
                 isActive
                   ? 'bg-primary text-primary-foreground shadow-button'
                   : 'text-muted-foreground hover:bg-muted/50'
               }`}
-              whileTap={{ scale: 0.95 }}
-              layout
             >
               <Icon className="w-5 h-5" />
-              <motion.span
-                className="text-sm font-semibold"
-                initial={false}
-                animate={{ opacity: isActive ? 1 : 0.8 }}
-              >
+              <span className="text-sm font-semibold">
                 {tab.label}
-              </motion.span>
-              
-              {isActive && (
-                <motion.div
-                  layoutId="activeTabIndicator"
-                  className="absolute inset-0 bg-primary rounded-2xl -z-10"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-            </motion.button>
+              </span>
+            </button>
           );
         })}
       </div>

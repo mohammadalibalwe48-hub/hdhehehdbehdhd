@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { BookOpen, Eye, EyeOff, Loader2, User, Lock, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -57,57 +56,26 @@ export function AuthPage() {
 
   return (
     <div className="min-h-screen flex flex-col auth-hero safe-area-top safe-area-bottom">
-      {/* Decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-40 left-10 w-60 h-60 rounded-full bg-accent/5 blur-3xl" />
-      </div>
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10">
         {/* Logo */}
-        <motion.div
-          initial={{ scale: 0, opacity: 0, rotateZ: -10 }}
-          animate={{ scale: 1, opacity: 1, rotateZ: 0 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
-          className="w-28 h-28 rounded-[2rem] auth-logo flex items-center justify-center mb-8 relative"
-        >
-          <BookOpen className="w-14 h-14 text-primary-foreground" strokeWidth={1.5} />
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.5, type: 'spring' }}
-            className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-accent flex items-center justify-center shadow-lg"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-accent-foreground" />
-          </motion.div>
-        </motion.div>
+        <div className="w-24 h-24 rounded-[1.5rem] auth-logo flex items-center justify-center mb-6 relative animate-in">
+          <BookOpen className="w-12 h-12 text-primary-foreground" strokeWidth={1.5} />
+          <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-accent flex items-center justify-center shadow-lg">
+            <Sparkles className="w-3 h-3 text-accent-foreground" />
+          </div>
+        </div>
 
         {/* Title */}
-        <motion.h1
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-4xl font-black text-foreground mb-2 text-center"
-        >
+        <h1 className="text-3xl font-black text-foreground mb-2 text-center animate-in">
           جدول دروسي
-        </motion.h1>
-        <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-muted-foreground text-lg text-center mb-10"
-        >
+        </h1>
+        <p className="text-muted-foreground text-base text-center mb-8 animate-in">
           نظّم دروسك بسهولة وذكاء ✨
-        </motion.p>
+        </p>
 
         {/* Auth Card */}
-        <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4, type: 'spring', stiffness: 100 }}
-          className="w-full max-w-sm"
-        >
+        <div className="w-full max-w-sm animate-in">
           {/* Tabs */}
           <div className="auth-tabs mb-8">
             <button
@@ -181,39 +149,29 @@ export function AuthPage() {
             </div>
 
             {/* Submit Button */}
-            <motion.button
+            <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary py-4 rounded-2xl text-lg font-bold flex items-center justify-center gap-3 mt-8"
-              whileTap={{ scale: 0.98 }}
+              className="w-full btn-primary py-4 rounded-2xl text-lg font-bold flex items-center justify-center gap-3 mt-8 active:scale-[0.98] transition-transform"
             >
               {loading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : isLogin ? (
-                <>
-                  تسجيل الدخول
-                </>
+                <>تسجيل الدخول</>
               ) : (
-                <>
-                  إنشاء حساب
-                </>
+                <>إنشاء حساب</>
               )}
-            </motion.button>
+            </button>
           </form>
-        </motion.div>
+        </div>
       </div>
 
       {/* Footer */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="px-6 pb-8 text-center"
-      >
+      <div className="px-6 pb-8 text-center">
         <p className="text-sm text-muted-foreground">
           بياناتك محفوظة ومشفرة بشكل آمن 🔒
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }

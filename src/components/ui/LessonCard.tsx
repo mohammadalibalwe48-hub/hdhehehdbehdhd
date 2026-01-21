@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Clock, User, Video, Building, ChevronLeft, Sparkles } from 'lucide-react';
 import { LessonOccurrence } from '@/types/lesson';
 
@@ -20,14 +19,9 @@ export function LessonCard({ occurrence, onClick, showDate }: LessonCardProps) {
   const isOnline = occurrence.locationType === 'online';
 
   return (
-    <motion.div
+    <div
       onClick={onClick}
-      className={`lesson-card p-4 cursor-pointer ${isOnline ? 'online' : 'in-person'}`}
-      initial={{ opacity: 0, y: 10, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.2 }}
+      className={`lesson-card p-4 cursor-pointer ${isOnline ? 'online' : 'in-person'} active:scale-[0.98] transition-transform`}
     >
       <div className="flex items-start gap-3">
         {/* Time indicator */}
@@ -85,13 +79,10 @@ export function LessonCard({ occurrence, onClick, showDate }: LessonCardProps) {
         </div>
 
         {/* Arrow */}
-        <motion.div 
-          className="flex-shrink-0 self-center"
-          whileHover={{ x: -4 }}
-        >
+        <div className="flex-shrink-0 self-center">
           <ChevronLeft className="w-5 h-5 text-muted-foreground/40" />
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
