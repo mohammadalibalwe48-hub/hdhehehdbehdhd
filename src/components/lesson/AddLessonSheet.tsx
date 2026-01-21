@@ -4,7 +4,6 @@ import { LessonFormData, WEEKDAYS_AR } from '@/types/lesson';
 import { useTeacherSuggestions } from '@/hooks/useTeacherSuggestions';
 import { format } from 'date-fns';
 import { Check, Video, MapPin, Clock, Calendar, User, FileText, Link, ChevronDown, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddLessonSheetProps {
   isOpen: boolean;
@@ -176,32 +175,21 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
             </div>
 
             {/* Teacher Suggestions Dropdown */}
-            <AnimatePresence>
-              {showTeacherSuggestions && teacherSuggestions.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute z-50 top-full mt-1 w-full bg-card border border-border rounded-xl shadow-medium overflow-hidden"
-                >
-                  {teacherSuggestions.map((name, index) => (
-                    <motion.button
-                      key={name}
-                      type="button"
-                      onClick={() => selectTeacher(name)}
-                      className="w-full px-4 py-3 text-right hover:bg-muted/50 flex items-center gap-2 transition-colors border-b border-border/50 last:border-0"
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                    >
-                      <User className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium text-foreground">{name}</span>
-                    </motion.button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {showTeacherSuggestions && teacherSuggestions.length > 0 && (
+              <div className="absolute z-50 top-full mt-1 w-full bg-card border border-border rounded-xl shadow-lg overflow-hidden animate-in">
+                {teacherSuggestions.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => selectTeacher(name)}
+                    className="w-full px-4 py-3 text-right hover:bg-muted/50 flex items-center gap-2 transition-colors border-b border-border/50 last:border-0"
+                  >
+                    <User className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">{name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -214,28 +202,20 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
             أيام الدرس
           </label>
           <div className="grid grid-cols-7 gap-1.5">
-            {WEEKDAYS_AR.map((day, index) => (
-              <motion.button
+            {WEEKDAYS_AR.map((day) => (
+              <button
                 key={day.value}
                 type="button"
                 onClick={() => toggleWeekday(day.value)}
-                className={`day-chip-compact ${formData.weekdays.includes(day.value) ? 'selected' : ''}`}
-                whileTap={{ scale: 0.92 }}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.02 }}
+                className={`day-chip-compact ${formData.weekdays.includes(day.value) ? 'selected' : ''} active:scale-95 transition-transform`}
               >
                 <span className="text-xs font-semibold">{day.short}</span>
                 {formData.weekdays.includes(day.value) && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-accent flex items-center justify-center"
-                  >
+                  <div className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-accent flex items-center justify-center">
                     <Check className="w-2.5 h-2.5 text-accent-foreground" />
-                  </motion.div>
+                  </div>
                 )}
-              </motion.button>
+              </button>
             ))}
           </div>
           {errors.weekdays && <p className="form-error">{errors.weekdays}</p>}
@@ -340,24 +320,22 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
         <div className="space-y-3">
           <label className="form-label">نوع الحضور</label>
           <div className="grid grid-cols-2 gap-3">
-            <motion.button
+            <button
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, locationType: 'online' }))}
-              className={`location-btn ${formData.locationType === 'online' ? 'selected online' : ''}`}
-              whileTap={{ scale: 0.97 }}
+              className={`location-btn ${formData.locationType === 'online' ? 'selected online' : ''} active:scale-[0.97] transition-transform`}
             >
               <Video className="w-5 h-5" />
               <span>أونلاين</span>
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, locationType: 'in_person' }))}
-              className={`location-btn ${formData.locationType === 'in_person' ? 'selected in-person' : ''}`}
-              whileTap={{ scale: 0.97 }}
+              className={`location-btn ${formData.locationType === 'in_person' ? 'selected in-person' : ''} active:scale-[0.97] transition-transform`}
             >
               <MapPin className="w-5 h-5" />
               <span>حضوري</span>
-            </motion.button>
+            </button>
           </div>
         </div>
 
@@ -398,16 +376,15 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
         </div>
 
         {/* Submit Button */}
-        <motion.button
+        <button
           type="button"
           onClick={handleSubmit}
-          className="w-full btn-primary py-4 rounded-2xl text-lg font-bold mt-4 relative overflow-hidden"
-          whileTap={{ scale: 0.98 }}
+          className="w-full btn-primary py-4 rounded-2xl text-lg font-bold mt-4 relative overflow-hidden active:scale-[0.98] transition-transform"
         >
           <span className="relative z-10">
             {isEditing ? 'حفظ التغييرات ✓' : 'إضافة الدرس ✨'}
           </span>
-        </motion.button>
+        </button>
       </div>
     </BottomSheet>
   );
