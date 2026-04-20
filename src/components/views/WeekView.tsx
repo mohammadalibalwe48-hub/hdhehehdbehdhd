@@ -73,7 +73,7 @@ export function WeekView({ weekStart, onWeekChange, occurrences, onLessonClick }
 
       {/* Week Calendar */}
       <div className="px-3">
-        <div className="grid grid-cols-7 gap-1.5 p-2 bg-muted/30 rounded-2xl">
+        <div className="grid grid-cols-7 gap-1.5 p-2 bg-muted/40 rounded-2xl border border-border/40">
           {weekDays.map((date) => {
             const isSelected = isSameDay(date, selectedDate);
             const isTodayDate = isToday(date);
@@ -85,21 +85,22 @@ export function WeekView({ weekStart, onWeekChange, occurrences, onLessonClick }
               <button
                 key={date.toISOString()}
                 onClick={() => setSelectedDate(date)}
-                className={`relative flex flex-col items-center py-2.5 px-0.5 rounded-xl transition-colors active:scale-95 ${
+                className={`relative flex flex-col items-center py-2.5 px-0.5 rounded-xl transition-all active:scale-95 ${
                   isSelected
-                    ? 'bg-primary text-primary-foreground shadow-button'
+                    ? 'text-primary-foreground shadow-button'
                     : isTodayDate
-                    ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
-                    : 'text-foreground hover:bg-muted'
+                    ? 'bg-primary/10 text-primary ring-1 ring-primary/25'
+                    : 'text-foreground hover:bg-background/60'
                 }`}
+                style={isSelected ? { background: 'var(--gradient-primary)' } : undefined}
               >
-                <span className={`text-[10px] font-medium mb-0.5 ${isSelected ? 'opacity-80' : 'opacity-60'}`}>
+                <span className={`text-[10px] font-semibold mb-0.5 tracking-wide ${isSelected ? 'opacity-85' : 'opacity-60'}`}>
                   {WEEKDAYS_AR[dayIndex].short}
                 </span>
-                <span className="text-lg font-bold leading-none">
+                <span className="text-lg font-extrabold leading-none">
                   {format(date, 'd')}
                 </span>
-                
+
                 {/* Lesson indicator */}
                 {hasLessonsForDay && (
                   <div className="flex gap-0.5 mt-1.5">
@@ -107,7 +108,7 @@ export function WeekView({ weekStart, onWeekChange, occurrences, onLessonClick }
                       <div
                         key={i}
                         className={`w-1 h-1 rounded-full ${
-                          isSelected ? 'bg-primary-foreground/70' : 'bg-accent'
+                          isSelected ? 'bg-primary-foreground/80' : 'bg-accent'
                         }`}
                       />
                     ))}
