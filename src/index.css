@@ -463,6 +463,78 @@
     background: hsl(var(--muted-foreground) / 0.25);
   }
 
+  .bottom-sheet-footer {
+    background: hsl(var(--background) / 0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid hsl(var(--border) / 0.6);
+    padding: 0.75rem 1.25rem calc(0.75rem + env(safe-area-inset-bottom));
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     Section Card - Subtle grouping inside forms
+  ───────────────────────────────────────────────────────────── */
+  .section-card {
+    @apply rounded-2xl p-4 space-y-3;
+    background: hsl(var(--muted) / 0.35);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  .section-card-header {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  .section-card-title {
+    @apply flex items-center gap-2 text-sm font-semibold text-foreground;
+  }
+
+  .section-card-icon {
+    @apply w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0;
+    background: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+  }
+
+  .section-card-icon.accent {
+    background: hsl(var(--accent) / 0.12);
+    color: hsl(var(--accent));
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     Toggle Pill - iOS style switch with inline label
+  ───────────────────────────────────────────────────────────── */
+  .toggle-pill {
+    @apply inline-flex items-center gap-2 cursor-pointer select-none;
+  }
+
+  .toggle-pill-label {
+    @apply text-xs font-medium text-muted-foreground;
+  }
+
+  .toggle-pill-track {
+    @apply relative inline-flex flex-shrink-0 rounded-full transition-colors duration-200;
+    width: 38px;
+    height: 22px;
+    background: hsl(var(--muted-foreground) / 0.3);
+  }
+
+  .toggle-pill-thumb {
+    @apply absolute top-0.5 rounded-full bg-white shadow-md transition-transform duration-200;
+    width: 18px;
+    height: 18px;
+    left: 2px;
+  }
+
+  .toggle-pill input:checked + .toggle-pill-track {
+    background: var(--gradient-primary);
+  }
+
+  .toggle-pill input:checked + .toggle-pill-track .toggle-pill-thumb {
+    transform: translateX(16px);
+  }
+
+  .toggle-pill input:focus-visible + .toggle-pill-track {
+    box-shadow: var(--shadow-input-focus);
+  }
+
   /* ─────────────────────────────────────────────────────────────
      Day Chip - Enhanced
   ───────────────────────────────────────────────────────────── */
@@ -508,6 +580,7 @@
     @apply relative px-2 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center;
     background: hsl(var(--secondary));
     color: hsl(var(--secondary-foreground));
+    min-height: 52px;
   }
 
   .day-chip-compact:hover {

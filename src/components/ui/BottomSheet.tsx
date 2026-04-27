@@ -7,9 +7,10 @@ interface BottomSheetProps {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
-export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
+export function BottomSheet({ isOpen, onClose, title, children, footer }: BottomSheetProps) {
   const dragControls = useDragControls();
   const constraintsRef = useRef(null);
 
@@ -45,11 +46,11 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.6 }}
             onDragEnd={handleDragEnd}
-            className="fixed bottom-0 left-0 right-0 z-50 bottom-sheet-content max-h-[92vh] overflow-hidden"
+            className="fixed bottom-0 left-0 right-0 z-50 bottom-sheet-content max-h-[95vh] flex flex-col overflow-hidden"
           >
             {/* Handle */}
             <div
-              className="flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing"
+              className="flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing flex-shrink-0"
               onPointerDown={(e) => dragControls.start(e)}
             >
               <div className="bottom-sheet-handle" />
@@ -57,7 +58,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
 
             {/* Header */}
             {title && (
-              <div className="flex items-center justify-between px-5 pb-4">
+              <div className="flex items-center justify-between px-5 pb-4 flex-shrink-0">
                 <h2 className="text-xl font-bold text-foreground">{title}</h2>
                 <motion.button
                   onClick={onClose}
@@ -70,9 +71,16 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
             )}
 
             {/* Content */}
-            <div className="overflow-y-auto max-h-[calc(92vh-80px)] overscroll-contain no-scrollbar">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain no-scrollbar">
               {children}
             </div>
+
+            {/* Sticky Footer */}
+            {footer && (
+              <div className="bottom-sheet-footer flex-shrink-0">
+                {footer}
+              </div>
+            )}
           </motion.div>
         </>
       )}

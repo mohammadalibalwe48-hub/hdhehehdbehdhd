@@ -78,7 +78,7 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.title.trim()) {
       newErrors.title = 'اسم الدرس مطلوب';
     }
@@ -88,7 +88,7 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
     if (!formData.startTime) {
       newErrors.startTime = 'وقت البداية مطلوب';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -111,10 +111,28 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? 'تعديل الدرس' : 'درس جديد ✨'}
+      footer={
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="w-full btn-primary py-3.5 rounded-2xl text-base font-bold relative overflow-hidden active:scale-[0.98] transition-transform"
+        >
+          <span className="relative z-10">
+            {isEditing ? 'حفظ التغييرات ✓' : 'إضافة الدرس ✨'}
+          </span>
+        </button>
+      }
     >
-      <div className="px-5 py-2 pb-8 space-y-5">
-        {/* Title & Teacher Section */}
-        <div className="space-y-4">
+      <div className="px-5 py-2 pb-6 space-y-4">
+        {/* Card 1: Lesson info */}
+        <div className="section-card">
+          <div className="section-card-title">
+            <div className="section-card-icon">
+              <FileText className="w-4 h-4" />
+            </div>
+            <span>معلومات الدرس</span>
+          </div>
+
           {/* Lesson Title */}
           <div>
             <label className="form-label form-label-required">
@@ -193,91 +211,111 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gradient-to-l from-transparent via-border to-transparent" />
-
-        {/* Weekdays Section */}
-        <div>
-          <label className="form-label form-label-required mb-3">
-            أيام الدرس
-          </label>
-          <div className="grid grid-cols-7 gap-1.5">
-            {WEEKDAYS_AR.map((day) => (
-              <button
-                key={day.value}
-                type="button"
-                onClick={() => toggleWeekday(day.value)}
-                className={`day-chip-compact ${formData.weekdays.includes(day.value) ? 'selected' : ''} active:scale-95 transition-transform`}
-              >
-                <span className="text-xs font-semibold">{day.short}</span>
-                {formData.weekdays.includes(day.value) && (
-                  <div className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-accent flex items-center justify-center">
-                    <Check className="w-2.5 h-2.5 text-accent-foreground" />
-                  </div>
-                )}
-              </button>
-            ))}
+        {/* Card 2: Schedule (days + time) */}
+        <div className="section-card">
+          <div className="section-card-title">
+            <div className="section-card-icon">
+              <Clock className="w-4 h-4" />
+            </div>
+            <span>الجدول</span>
           </div>
-          {errors.weekdays && <p className="form-error">{errors.weekdays}</p>}
+
+          {/* Weekdays */}
+          <div>
+            <label className="form-label form-label-required">
+              أيام الدرس
+            </label>
+            <div className="grid grid-cols-7 gap-1.5">
+              {WEEKDAYS_AR.map((day) => (
+                <button
+                  key={day.value}
+                  type="button"
+                  onClick={() => toggleWeekday(day.value)}
+                  className={`day-chip-compact ${formData.weekdays.includes(day.value) ? 'selected' : ''} active:scale-95 transition-transform`}
+                >
+                  <span className="text-sm font-semibold">{day.short}</span>
+                  {formData.weekdays.includes(day.value) && (
+                    <div className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-accent flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 text-accent-foreground" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+            {errors.weekdays && <p className="form-error">{errors.weekdays}</p>}
+          </div>
+
+          {/* Time row with inline "no end time" toggle */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="form-label mb-0 text-xs">الوقت</label>
+              <label className="toggle-pill">
+                <span className="toggle-pill-label">بدون وقت نهاية</span>
+                <input
+                  type="checkbox"
+                  checked={!formData.hasEndTime}
+                  onChange={(e) => setFormData(prev => ({ ...prev, hasEndTime: !e.target.checked, endTime: '' }))}
+                  className="sr-only peer"
+                />
+                <span className="toggle-pill-track">
+                  <span className="toggle-pill-thumb" />
+                </span>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="form-label form-label-required text-xs">البداية</label>
+                <input
+                  type="time"
+                  value={formData.startTime}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, startTime: e.target.value }));
+                    if (errors.startTime) setErrors(prev => ({ ...prev, startTime: '' }));
+                  }}
+                  className="input-premium text-center text-sm"
+                  dir="ltr"
+                />
+                {errors.startTime && <p className="form-error">{errors.startTime}</p>}
+              </div>
+              <div>
+                <label className="form-label text-xs">النهاية</label>
+                <input
+                  type="time"
+                  value={formData.endTime}
+                  onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                  className="input-premium text-center text-sm"
+                  dir="ltr"
+                  disabled={!formData.hasEndTime}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Time Section */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Clock className="w-4 h-4 text-primary" />
+        {/* Card 3: Date range */}
+        <div className="section-card">
+          <div className="section-card-header">
+            <div className="section-card-title">
+              <div className="section-card-icon accent">
+                <Calendar className="w-4 h-4" />
+              </div>
+              <span>المدة الزمنية</span>
             </div>
-            <span className="text-sm font-semibold text-foreground">الوقت</span>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="form-label form-label-required text-xs">البداية</label>
+            <label className="toggle-pill">
+              <span className="toggle-pill-label">بدون تاريخ نهاية</span>
               <input
-                type="time"
-                value={formData.startTime}
-                onChange={(e) => {
-                  setFormData(prev => ({ ...prev, startTime: e.target.value }));
-                  if (errors.startTime) setErrors(prev => ({ ...prev, startTime: '' }));
-                }}
-                className="input-premium text-center text-sm"
-                dir="ltr"
+                type="checkbox"
+                checked={!formData.hasEndDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, hasEndDate: !e.target.checked, endDate: '' }))}
+                className="sr-only peer"
               />
-              {errors.startTime && <p className="form-error">{errors.startTime}</p>}
-            </div>
-            <div>
-              <label className="form-label text-xs">النهاية</label>
-              <input
-                type="time"
-                value={formData.endTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                className="input-premium text-center text-sm"
-                dir="ltr"
-                disabled={!formData.hasEndTime}
-              />
-            </div>
+              <span className="toggle-pill-track">
+                <span className="toggle-pill-thumb" />
+              </span>
+            </label>
           </div>
-          
-          <label className="flex items-center gap-3 cursor-pointer py-1">
-            <input
-              type="checkbox"
-              checked={!formData.hasEndTime}
-              onChange={(e) => setFormData(prev => ({ ...prev, hasEndTime: !e.target.checked, endTime: '' }))}
-              className="checkbox-premium"
-            />
-            <span className="text-sm text-muted-foreground">بدون وقت نهاية</span>
-          </label>
-        </div>
 
-        {/* Date Section */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-accent" />
-            </div>
-            <span className="text-sm font-semibold text-foreground">التاريخ</span>
-          </div>
-          
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="form-label text-xs">تاريخ البداية</label>
@@ -301,90 +339,76 @@ export function AddLessonSheet({ isOpen, onClose, onSubmit, initialData, isEditi
               />
             </div>
           </div>
-          
-          <label className="flex items-center gap-3 cursor-pointer py-1">
-            <input
-              type="checkbox"
-              checked={!formData.hasEndDate}
-              onChange={(e) => setFormData(prev => ({ ...prev, hasEndDate: !e.target.checked, endDate: '' }))}
-              className="checkbox-premium"
-            />
-            <span className="text-sm text-muted-foreground">بدون تاريخ نهاية (مستمر)</span>
-          </label>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gradient-to-l from-transparent via-border to-transparent" />
-
-        {/* Location Section */}
-        <div className="space-y-3">
-          <label className="form-label">نوع الحضور</label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setFormData(prev => ({ ...prev, locationType: 'online' }))}
-              className={`location-btn ${formData.locationType === 'online' ? 'selected online' : ''} active:scale-[0.97] transition-transform`}
-            >
-              <Video className="w-5 h-5" />
-              <span>أونلاين</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormData(prev => ({ ...prev, locationType: 'in_person' }))}
-              className={`location-btn ${formData.locationType === 'in_person' ? 'selected in-person' : ''} active:scale-[0.97] transition-transform`}
-            >
-              <MapPin className="w-5 h-5" />
-              <span>حضوري</span>
-            </button>
+        {/* Card 4: Location & Notes */}
+        <div className="section-card">
+          <div className="section-card-title">
+            <div className="section-card-icon">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <span>المكان والملاحظات</span>
           </div>
-        </div>
 
-        {/* Location Details */}
-        <div>
-          <label className="form-label">
-            {formData.locationType === 'online' ? 'رابط الاجتماع' : 'العنوان'}
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={formData.locationDetails}
-              onChange={(e) => setFormData(prev => ({ ...prev, locationDetails: e.target.value }))}
-              className="input-premium pr-12"
-              placeholder={formData.locationType === 'online' ? 'رابط الزوم أو جوجل ميت...' : 'المبنى، الغرفة...'}
-              dir={formData.locationType === 'online' ? 'ltr' : 'rtl'}
-            />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2">
-              {formData.locationType === 'online' ? (
-                <Link className="w-5 h-5 text-muted-foreground/40" />
-              ) : (
-                <MapPin className="w-5 h-5 text-muted-foreground/40" />
-              )}
+          {/* Location type */}
+          <div>
+            <label className="form-label">نوع الحضور</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, locationType: 'online' }))}
+                className={`location-btn ${formData.locationType === 'online' ? 'selected online' : ''} active:scale-[0.97] transition-transform`}
+              >
+                <Video className="w-5 h-5" />
+                <span>أونلاين</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, locationType: 'in_person' }))}
+                className={`location-btn ${formData.locationType === 'in_person' ? 'selected in-person' : ''} active:scale-[0.97] transition-transform`}
+              >
+                <MapPin className="w-5 h-5" />
+                <span>حضوري</span>
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Notes */}
-        <div>
-          <label className="form-label">ملاحظات</label>
-          <textarea
-            value={formData.notes}
-            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-            className="input-premium resize-none"
-            rows={2}
-            placeholder="أي ملاحظات تريد تذكرها..."
-          />
-        </div>
+          {/* Location Details */}
+          <div>
+            <label className="form-label">
+              {formData.locationType === 'online' ? 'رابط الاجتماع' : 'العنوان'}
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.locationDetails}
+                onChange={(e) => setFormData(prev => ({ ...prev, locationDetails: e.target.value }))}
+                className="input-premium pr-12"
+                placeholder={formData.locationType === 'online' ? 'رابط الزوم أو جوجل ميت...' : 'المبنى، الغرفة...'}
+                dir={formData.locationType === 'online' ? 'ltr' : 'rtl'}
+              />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                {formData.locationType === 'online' ? (
+                  <Link className="w-5 h-5 text-muted-foreground/40" />
+                ) : (
+                  <MapPin className="w-5 h-5 text-muted-foreground/40" />
+                )}
+              </div>
+            </div>
+          </div>
 
-        {/* Submit Button */}
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="w-full btn-primary py-4 rounded-2xl text-lg font-bold mt-4 relative overflow-hidden active:scale-[0.98] transition-transform"
-        >
-          <span className="relative z-10">
-            {isEditing ? 'حفظ التغييرات ✓' : 'إضافة الدرس ✨'}
-          </span>
-        </button>
+          {/* Notes */}
+          <div>
+            <label className="form-label">ملاحظات</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              className="input-premium resize-none"
+              rows={2}
+              placeholder="أي ملاحظات تريد تذكرها..."
+            />
+          </div>
+        </div>
       </div>
     </BottomSheet>
   );
