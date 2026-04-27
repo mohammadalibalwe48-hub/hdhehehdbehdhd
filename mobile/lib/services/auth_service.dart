@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'powersync_service.dart';
+
 /// Uses the same username→fake-email scheme as the web app so accounts
 /// created on the website can log in on the APK and vice versa.
 class AuthService {
@@ -32,6 +34,9 @@ class AuthService {
   }
 
   static Future<void> signOut() async {
+    // Clear the local PowerSync cache first so the next user on this device
+    // does not see the previous user's lessons even briefly.
+    await PowerSyncService.signOutAndClear();
     await _client.auth.signOut();
   }
 }

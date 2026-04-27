@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
+import 'services/powersync_service.dart';
 import 'services/supabase_config.dart';
 
 Future<void> main() async {
@@ -13,5 +14,6 @@ Future<void> main() async {
     url: SupabaseConfig.url,
     anonKey: SupabaseConfig.anonKey,
   );
+  await PowerSyncService.init();
   runApp(const LessonsApp());
 }
