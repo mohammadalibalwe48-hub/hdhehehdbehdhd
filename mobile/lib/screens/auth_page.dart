@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
 import '../theme.dart';
 
+/// Redesigned auth screen: floating Studies banner, frosted card, animated
+/// entrance. Same username/password logic as before, just a fresher look.
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 
@@ -11,7 +13,8 @@ class AuthPage extends StatefulWidget {
   State<AuthPage> createState() => _AuthPageState();
 }
 
-class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
+class _AuthPageState extends State<AuthPage>
+    with SingleTickerProviderStateMixin {
   bool _isLogin = true;
   bool _showPassword = false;
   bool _loading = false;
@@ -19,10 +22,16 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   final _passwordCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  late final AnimationController _entry = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+  )..forward();
+
   @override
   void dispose() {
     _usernameCtrl.dispose();
     _passwordCtrl.dispose();
+    _entry.dispose();
     super.dispose();
   }
 
@@ -51,7 +60,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
           msg.contains('User already')) {
         display = 'اسم المستخدم مستخدم مسبقاً';
       }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(display)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(display)));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -63,50 +73,68 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: isDark ? AppColors.gradientHeroDark : AppColors.gradientHero,
+          gradient: isDark
+              ? const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF0E1B1F), Color(0xFF0B1518)],
+                )
+              : const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFEDF2FF), Color(0xFFF9FBFF), Color(0xFFFFFFFF)],
+                ),
         ),
         child: Stack(
           children: [
+            // Soft colored blobs in the background.
             Positioned(
-              top: -120,
+              top: -140,
               right: -80,
-              child: _blob(180, AppColors.primary.withOpacity(isDark ? 0.18 : 0.22)),
+              child: _blob(260, const Color(0xFF2F6FE5)
+                  .withOpacity(isDark ? 0.22 : 0.18)),
             ),
             Positioned(
-              bottom: -140,
-              left: -100,
-              child: _blob(260, AppColors.accent.withOpacity(isDark ? 0.16 : 0.20)),
+              top: 180,
+              left: -120,
+              child: _blob(220, const Color(0xFF34C759)
+                  .withOpacity(isDark ? 0.16 : 0.14)),
+            ),
+            Positioned(
+              bottom: -160,
+              right: -100,
+              child: _blob(320, const Color(0xFF1EA594)
+                  .withOpacity(isDark ? 0.16 : 0.10)),
             ),
             SafeArea(
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                  child: Column(
-                    children: [
-                      _Logo(isDark: isDark),
-                      const SizedBox(height: 24),
-                      Text(
-                        'جدول دروسي',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium!
-                            .copyWith(fontWeight: FontWeight.w900),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'نظم دروسك بسهولة وذكاء ✨',
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              color: isDark
-                                  ? AppColors.mutedForegroundDark
-                                  : AppColors.mutedForeground,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  child: AnimatedBuilder(
+                    animation: _entry,
+                    builder: (context, _) {
+                      final t = Curves.easeOutCubic.transform(_entry.value);
+                      return Opacity(
+                        opacity: t,
+                        child: Transform.translate(
+                          offset: Offset(0, (1 - t) * 24),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 460),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _brandHeader(context, isDark),
+                                const SizedBox(height: 22),
+                                _card(context, isDark),
+                                const SizedBox(height: 16),
+                                _footerNote(context, isDark),
+                              ],
                             ),
-                      ),
-                      const SizedBox(height: 28),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 420),
-                        child: _buildCard(context, isDark),
-                      ),
-                    ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -117,29 +145,86 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _blob(double size, Color color) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [color, color.withOpacity(0)],
+  Widget _blob(double size, Color color) => IgnorePointer(
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [color, color.withOpacity(0)],
+            ),
           ),
         ),
       );
 
-  Widget _buildCard(BuildContext context, bool isDark) {
+  Widget _brandHeader(BuildContext context, bool isDark) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2F6FE5).withOpacity(0.18),
+                blurRadius: 40,
+                offset: const Offset(0, 18),
+              ),
+            ],
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.08)
+                  : const Color(0xFFE6EEFB),
+            ),
+          ),
+          child: Image.asset(
+            'assets/icon_square.png',
+            width: 96,
+            height: 96,
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Text(
+          'Studies',
+          style: Theme.of(context).textTheme.displaySmall!.copyWith(
+                fontWeight: FontWeight.w900,
+                color: isDark ? Colors.white : const Color(0xFF1F4AA3),
+                letterSpacing: -0.5,
+                fontSize: 40,
+              ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _isLogin
+              ? 'مرحباً بعودتك، سجل دخولك لمتابعة دروسك'
+              : 'أنشئ حساباً جديداً وابدأ تنظيم دروسك',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+                height: 1.5,
+              ),
+        ),
+      ],
+    );
+  }
+
+  Widget _card(BuildContext context, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark.withOpacity(0.9) : Colors.white,
+        color: isDark ? AppColors.cardDark.withOpacity(0.92) : Colors.white,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: isDark ? AppColors.borderDark : AppColors.border,
+          color: isDark ? AppColors.borderDark : const Color(0xFFE6EEFB),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.4 : 0.08),
+            color: Colors.black.withOpacity(isDark ? 0.4 : 0.06),
             blurRadius: 30,
             offset: const Offset(0, 14),
           ),
@@ -148,23 +233,16 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       child: Column(
         children: [
           _tabSwitcher(isDark),
-          const SizedBox(height: 22),
+          const SizedBox(height: 20),
           Form(
             key: _formKey,
             child: Column(
               children: [
-                _label('اسم المستخدم'),
-                const SizedBox(height: 6),
-                TextFormField(
+                _field(
                   controller: _usernameCtrl,
-                  textInputAction: TextInputAction.next,
-                  autocorrect: false,
-                  textDirection: TextDirection.ltr,
-                  textAlign: TextAlign.right,
-                  decoration: const InputDecoration(
-                    hintText: 'أدخل اسم المستخدم',
-                    prefixIcon: Icon(Icons.person_outline),
-                  ),
+                  label: 'اسم المستخدم',
+                  hint: 'أدخل اسم المستخدم',
+                  icon: Icons.person_outline,
                   validator: (v) {
                     final value = (v ?? '').trim();
                     if (value.isEmpty) return 'الرجاء إدخال اسم المستخدم';
@@ -172,26 +250,24 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                     return null;
                   },
                 ),
-                const SizedBox(height: 18),
-                _label('كلمة المرور'),
-                const SizedBox(height: 6),
-                TextFormField(
+                const SizedBox(height: 14),
+                _field(
                   controller: _passwordCtrl,
-                  obscureText: !_showPassword,
-                  textDirection: TextDirection.ltr,
-                  textAlign: TextAlign.right,
-                  decoration: InputDecoration(
-                    hintText: '••••••••',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _showPassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
-                      onPressed: () =>
-                          setState(() => _showPassword = !_showPassword),
+                  label: 'كلمة المرور',
+                  hint: '••••••••',
+                  icon: Icons.lock_outline,
+                  obscure: !_showPassword,
+                  suffix: IconButton(
+                    icon: Icon(
+                      _showPassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForeground,
                     ),
+                    onPressed: () =>
+                        setState(() => _showPassword = !_showPassword),
                   ),
                   validator: (v) {
                     if ((v ?? '').length < 6) {
@@ -200,30 +276,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                     return null;
                   },
                 ),
-                const SizedBox(height: 24),
-                _gradientButton(),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      _isLogin ? 'ليس لديك حساب؟ ' : 'لديك حساب بالفعل؟ ',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    GestureDetector(
-                      onTap: () => setState(() => _isLogin = !_isLogin),
-                      child: Text(
-                        _isLogin ? 'أنشئ حساباً' : 'سجل الدخول',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          color: isDark
-                              ? AppColors.primaryGlow
-                              : AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 22),
+                _primaryButton(isDark),
               ],
             ),
           ),
@@ -232,45 +286,153 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _label(String text) => Align(
-        alignment: Alignment.centerRight,
-        child: Text(
-          text,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+  Widget _footerNote(BuildContext context, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          _isLogin ? 'ليس لديك حساب؟ ' : 'لديك حساب بالفعل؟ ',
+          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
         ),
-      );
+        GestureDetector(
+          onTap: () => setState(() => _isLogin = !_isLogin),
+          child: Text(
+            _isLogin ? 'أنشئ حساباً' : 'سجل الدخول',
+            style: TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+              color: isDark ? const Color(0xFF6AA3FF) : const Color(0xFF2F6FE5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _field({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    bool obscure = false,
+    Widget? suffix,
+    String? Function(String?)? validator,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 4, bottom: 6),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+            ),
+          ),
+        ),
+        TextFormField(
+          controller: controller,
+          obscureText: obscure,
+          autocorrect: false,
+          textInputAction: obscure ? TextInputAction.done : TextInputAction.next,
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.right,
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(icon,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : const Color(0xFF2F6FE5)),
+            suffixIcon: suffix,
+            filled: true,
+            fillColor: isDark
+                ? Colors.white.withOpacity(0.04)
+                : const Color(0xFFF3F6FC),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: isDark
+                    ? AppColors.borderDark
+                    : const Color(0xFFE6EEFB),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: isDark
+                    ? AppColors.borderDark
+                    : const Color(0xFFE6EEFB),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(
+                color: Color(0xFF2F6FE5),
+                width: 1.8,
+              ),
+            ),
+          ),
+          validator: validator,
+        ),
+      ],
+    );
+  }
 
   Widget _tabSwitcher(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.mutedDark : AppColors.muted,
+        color: isDark ? Colors.white.withOpacity(0.04) : const Color(0xFFF3F6FC),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          _tab(label: 'تسجيل الدخول', selected: _isLogin, onTap: () => setState(() => _isLogin = true)),
-          _tab(label: 'حساب جديد', selected: !_isLogin, onTap: () => setState(() => _isLogin = false)),
+          _tab(
+              label: 'تسجيل الدخول',
+              selected: _isLogin,
+              onTap: () => setState(() => _isLogin = true)),
+          _tab(
+              label: 'حساب جديد',
+              selected: !_isLogin,
+              onTap: () => setState(() => _isLogin = false)),
         ],
       ),
     );
   }
 
-  Widget _tab({required String label, required bool selected, required VoidCallback onTap}) {
+  Widget _tab({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          duration: const Duration(milliseconds: 220),
+          padding: const EdgeInsets.symmetric(vertical: 11),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            gradient: selected ? AppColors.gradientPrimary : null,
+            gradient: selected
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF3A7BF0), Color(0xFF2F6FE5)],
+                  )
+                : null,
             borderRadius: BorderRadius.circular(12),
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.25),
+                      color: const Color(0xFF2F6FE5).withOpacity(0.28),
                       blurRadius: 14,
                       offset: const Offset(0, 6),
                     ),
@@ -282,6 +444,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
             style: TextStyle(
               color: selected ? Colors.white : null,
               fontWeight: FontWeight.w800,
+              fontSize: 13.5,
             ),
           ),
         ),
@@ -289,19 +452,23 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _gradientButton() {
+  Widget _primaryButton(bool isDark) {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 56,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: AppColors.gradientPrimary,
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF3A7BF0), Color(0xFF2F6FE5)],
+          ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.4),
-              blurRadius: 22,
-              offset: const Offset(0, 10),
+              color: const Color(0xFF2F6FE5).withOpacity(0.45),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
             ),
           ],
         ),
@@ -313,76 +480,36 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
             child: Center(
               child: _loading
                   ? const SizedBox(
-                      width: 24,
-                      height: 24,
+                      width: 26,
+                      height: 26,
                       child: CircularProgressIndicator(
                         color: Colors.white,
-                        strokeWidth: 2.4,
+                        strokeWidth: 2.6,
                       ),
                     )
-                  : Text(
-                      _isLogin ? 'تسجيل الدخول' : 'إنشاء حساب',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _isLogin ? 'تسجيل الدخول' : 'إنشاء حساب',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ],
                     ),
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Logo extends StatelessWidget {
-  final bool isDark;
-  const _Logo({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 96,
-          height: 96,
-          decoration: BoxDecoration(
-            gradient: AppColors.gradientPrimary,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.45),
-                blurRadius: 30,
-                offset: const Offset(0, 14),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.auto_stories_outlined,
-              color: Colors.white, size: 48),
-        ),
-        Positioned(
-          top: -6,
-          left: -6,
-          child: Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              gradient: AppColors.gradientAccent,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accent.withOpacity(0.4),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
-          ),
-        ),
-      ],
     );
   }
 }

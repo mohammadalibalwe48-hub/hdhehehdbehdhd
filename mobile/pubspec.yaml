@@ -1,5 +1,5 @@
 name: lessons_mobile
-description: "Arabic lesson scheduler mobile app (Flutter) — same Supabase backend as the web app."
+description: "Studies — Arabic lesson scheduler (Flutter), same Supabase backend as the web app."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -32,6 +32,35 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.1
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/banner.png
+    - assets/icon_square.png
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: false
+  image_path: "assets/icon_square_white.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon_foreground.png"
+  remove_alpha_ios: false
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/banner.png
+  android_12:
+    image: assets/icon_square.png
+    color: "#FFFFFF"
+  color_dark: "#0B1518"
+  image_dark: assets/banner.png
+  android: true
+  ios: false
+  web: false
+  fullscreen: false
+  android_gravity: center
+
