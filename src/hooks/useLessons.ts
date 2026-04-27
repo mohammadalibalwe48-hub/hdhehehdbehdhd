@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Lesson, LessonException, LessonOccurrence, LessonFormData } from '@/types/lesson';
+import { ExportData } from '@/utils/exportImport';
 import { format, parseISO, addDays, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -170,6 +171,49 @@ export function useLessons() {
     },
   });
 
+  // Import lessons from exported data
+  const importLessons = useMutation({
+    mutationFn: async (data: ExportData) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const oldToNewId = new Map<string, string>();
+
+      for (const lesson of data.lessons) {
+        const { id: oldId, created_at, updated_at, ...rest } = lesson;
+        const { data: inserted, error } = await supabase
+          .from('lessons')
+          .insert({ ...rest, user_id: user.id })
+          .select()
+          .single();
+
+        if (error) throw error;
+        oldToNewId.set(oldId, inserted.id);
+      }
+
+      const exceptionsToInsert = data.exceptions
+        .filter((e) => oldToNewId.has(e.lesson_id))
+        .map(({ id, created_at, ...rest }) => ({
+          ...rest,
+          lesson_id: oldToNewId.get(rest.lesson_id)!,
+        }));
+
+      if (exceptionsToInsert.length > 0) {
+        const { error } = await supabase
+          .from('lesson_exceptions')
+          .insert(exceptionsToInsert);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lessons'] });
+      queryClient.invalidateQueries({ queryKey: ['lesson_exceptions'] });
+      toast.success('تم استيراد الدروس بنجاح');
+    },
+    onError: () => {
+      toast.error('حدث خطأ أثناء استيراد الدروس');
+    },
+  });
+
   // Get occurrences for a specific week
   const getOccurrencesForWeek = (weekStart: Date): LessonOccurrence[] => {
     const lessons = lessonsQuery.data || [];
@@ -243,6 +287,7 @@ export function useLessons() {
     deleteLesson,
     createException,
     deleteException,
+    importLessons,
     getOccurrencesForWeek,
     getOccurrencesForDate,
   };
