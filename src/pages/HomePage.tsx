@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { startOfWeek, addWeeks, subWeeks } from 'date-fns';
-import { LogOut, BookOpen, Sparkles } from 'lucide-react';
+import { LogOut, BookOpen, Sparkles, Download, Upload } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLessons } from '@/hooks/useLessons';
 import { BottomNav } from '@/components/ui/BottomNav';
@@ -12,6 +12,7 @@ import { ListView } from '@/components/views/ListView';
 import { AddLessonSheet } from '@/components/lesson/AddLessonSheet';
 import { LessonDetailsSheet } from '@/components/lesson/LessonDetailsSheet';
 import { LessonFormData, LessonOccurrence, Lesson } from '@/types/lesson';
+import { exportLessonsToJSON, readFileAsJSON } from '@/utils/exportImport';
 import { toast } from 'sonner';
 
 type Tab = 'week' | 'list';
@@ -20,13 +21,17 @@ export function HomePage() {
   const { signOut, user } = useAuth();
   const {
     lessons,
+    exceptions,
     isLoading,
     createLesson,
     updateLesson,
     deleteLesson,
     createException,
+    importLessons,
     getOccurrencesForWeek,
   } = useLessons();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [activeTab, setActiveTab] = useState<Tab>('week');
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
@@ -175,6 +180,33 @@ export function HomePage() {
     };
   };
 
+  const handleExport = () => {
+    if (lessons.length === 0) {
+      toast.error('لا توجد دروس للتصدير');
+      return;
+    }
+    exportLessonsToJSON(lessons, exceptions);
+    toast.success('تم تصدير الدروس بنجاح');
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await readFileAsJSON(file);
+      importLessons.mutate(data);
+    } catch {
+      toast.error('ملف غير صالح');
+    }
+
+    e.target.value = '';
+  };
+
   const handleSignOut = async () => {
     await signOut();
     toast.success('تم تسجيل الخروج');
@@ -211,6 +243,29 @@ export function HomePage() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
+            <motion.button
+              onClick={handleExport}
+              aria-label="تصدير الدروس"
+              className="p-2.5 rounded-xl hover:bg-primary/10 transition-colors group"
+              whileTap={{ scale: 0.95 }}
+            >
+              <Download className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </motion.button>
+            <motion.button
+              onClick={handleImportClick}
+              aria-label="استيراد الدروس"
+              className="p-2.5 rounded-xl hover:bg-primary/10 transition-colors group"
+              whileTap={{ scale: 0.95 }}
+            >
+              <Upload className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </motion.button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
             <ThemeToggle />
             <motion.button
               onClick={handleSignOut}
