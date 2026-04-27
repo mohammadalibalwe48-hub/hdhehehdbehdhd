@@ -21,8 +21,8 @@ dependencies:
   shared_preferences: ^2.3.2
   collection: ^1.18.0
 
-  # Offline-first sync (level 3) — local SQLite mirror of Supabase tables.
-  powersync: ^2.0.1
+  # Offline-first: local SQLite cache + write queue + Supabase Realtime push.
+  sqflite: ^2.4.0
   path_provider: ^2.1.5
   path: ^1.9.0
   uuid: ^4.5.1
