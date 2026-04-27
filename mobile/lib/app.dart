@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/root_gate.dart';
+import 'screens/splash_screen.dart';
 import 'theme.dart';
 
 class LessonsApp extends StatefulWidget {
@@ -46,7 +47,7 @@ class LessonsAppState extends State<LessonsApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'جدول دروسي',
+      title: 'Studies',
       debugShowCheckedModeBanner: false,
       theme: appLightTheme,
       darkTheme: appDarkTheme,
@@ -62,7 +63,7 @@ class LessonsAppState extends State<LessonsApp> {
         textDirection: TextDirection.rtl,
         child: child ?? const SizedBox.shrink(),
       ),
-      home: const RootGate(),
+      home: const AnimatedSplash(child: RootGate()),
     );
   }
 }
