@@ -184,6 +184,13 @@ class SyncService {
 
   Future<void> flushNow() => _flushPending();
 
+  /// Manual "sync now" triggered from the settings page. Runs a full
+  /// queue flush + pull sequence. Safe to call anytime.
+  Future<void> syncNow() async {
+    await _flushPending();
+    await _pullAll();
+  }
+
   Future<void> _flushPending() async {
     if (_isFlushing) return;
     if (_sb.auth.currentUser == null) return;

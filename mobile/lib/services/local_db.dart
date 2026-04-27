@@ -141,6 +141,12 @@ class LocalDb {
     if (!_exceptionsCtrl.isClosed) _exceptionsCtrl.add(_exceptions);
   }
 
+  /// Snapshot accessors used by services that need the current data once
+  /// (e.g. NotificationsService when recomputing the schedule).
+  Future<List<Lesson>> currentLessons() async => List.unmodifiable(_lessons);
+  Future<List<LessonException>> currentExceptions() async =>
+      List.unmodifiable(_exceptions);
+
   Future<List<Lesson>> _readLessons() async {
     final rows = await _d.query('lessons', orderBy: 'created_at DESC');
     return rows.map(_rowToLesson).toList();

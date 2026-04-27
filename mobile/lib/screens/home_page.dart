@@ -9,6 +9,7 @@ import '../models/lesson.dart';
 import '../services/auth_service.dart';
 import '../services/lessons_service.dart';
 import '../theme.dart';
+import 'settings_page.dart';
 import '../utils/occurrences.dart';
 import '../widgets/add_lesson_sheet.dart';
 import '../widgets/empty_state.dart';
@@ -333,12 +334,13 @@ class _HomePageState extends State<HomePage> {
                 : Icons.dark_mode_outlined),
           ),
           IconButton(
-            tooltip: 'تسجيل الخروج',
-            onPressed: () async {
-              final ok = await _confirm('تسجيل الخروج', 'هل تريد الخروج من الحساب؟');
-              if (ok) await AuthService.signOut();
+            tooltip: 'الإعدادات',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              );
             },
-            icon: const Icon(Icons.logout_outlined),
+            icon: const Icon(Icons.settings_outlined),
           ),
         ],
       ),

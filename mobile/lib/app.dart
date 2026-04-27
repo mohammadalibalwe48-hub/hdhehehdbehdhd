@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'screens/root_gate.dart';
 import 'screens/splash_screen.dart';
+import 'services/secure_window.dart';
+import 'services/settings_service.dart';
 import 'theme.dart';
 
 class LessonsApp extends StatefulWidget {
@@ -16,32 +18,38 @@ class LessonsApp extends StatefulWidget {
 }
 
 class LessonsAppState extends State<LessonsApp> {
-  ThemeMode _themeMode = ThemeMode.system;
-
   @override
   void initState() {
     super.initState();
-    _loadTheme();
+    SettingsService.instance.addListener(_onSettingsChanged);
   }
 
-  Future<void> _loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString('theme_mode');
-    if (saved != null) {
-      setState(() {
-        _themeMode = ThemeMode.values.firstWhere(
-          (m) => m.name == saved,
-          orElse: () => ThemeMode.system,
-        );
-      });
-    }
+  @override
+  void dispose() {
+    SettingsService.instance.removeListener(_onSettingsChanged);
+    super.dispose();
   }
 
+  void _onSettingsChanged() {
+    if (mounted) setState(() {});
+    // Keep the Android secure-window flag in sync with the toggle.
+    SecureWindow.applyFromSettings();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Apply the persisted screenshot-block setting once the engine is up.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => SecureWindow.applyFromSettings(),
+    );
+  }
+
+  /// Legacy convenience used by the home-page icon: cycles Light -> Dark -> Light.
   Future<void> toggleTheme() async {
-    final next = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    setState(() => _themeMode = next);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme_mode', next.name);
+    final current = SettingsService.instance.themeMode;
+    final next = current == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    await SettingsService.instance.setThemeMode(next);
   }
 
   @override
@@ -51,7 +59,7 @@ class LessonsAppState extends State<LessonsApp> {
       debugShowCheckedModeBanner: false,
       theme: appLightTheme,
       darkTheme: appDarkTheme,
-      themeMode: _themeMode,
+      themeMode: SettingsService.instance.themeMode,
       locale: const Locale('ar'),
       supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: const [
