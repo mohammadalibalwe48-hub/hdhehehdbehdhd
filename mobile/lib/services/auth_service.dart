@@ -2,6 +2,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Uses the same username→fake-email scheme as the web app so accounts
 /// created on the website can log in on the APK and vice versa.
+///
+/// Cache clean-up after sign-out is handled by SyncService reacting to the
+/// `signedOut` auth event, so we don't need to touch the local DB here.
 class AuthService {
   AuthService._();
   static final SupabaseClient _client = Supabase.instance.client;

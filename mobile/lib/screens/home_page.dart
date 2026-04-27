@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' as intl;
@@ -29,33 +31,43 @@ class _HomePageState extends State<HomePage> {
   bool _loading = true;
   List<Lesson> _lessons = [];
   List<LessonException> _exceptions = [];
+  StreamSubscription<List<Lesson>>? _lessonsSub;
+  StreamSubscription<List<LessonException>>? _exceptionsSub;
 
   @override
   void initState() {
     super.initState();
-    _refresh();
+    _subscribe();
   }
 
-  Future<void> _refresh() async {
-    setState(() => _loading = true);
-    try {
-      final results = await Future.wait([
-        LessonsService.listLessons(),
-        LessonsService.listExceptions(),
-      ]);
+  @override
+  void dispose() {
+    _lessonsSub?.cancel();
+    _exceptionsSub?.cancel();
+    super.dispose();
+  }
+
+  /// Subscribe to the local PowerSync-managed SQLite DB. These streams emit
+  /// on every change — local write, pull from Supabase, post-offline sync —
+  /// so the UI stays live without any manual refresh.
+  void _subscribe() {
+    _lessonsSub = LessonsService.watchLessons().listen((lessons) {
       if (!mounted) return;
       setState(() {
-        _lessons = results[0] as List<Lesson>;
-        _exceptions = results[1] as List<LessonException>;
+        _lessons = lessons;
         _loading = false;
       });
-    } catch (e) {
+    }, onError: (e) {
       if (!mounted) return;
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('تعذّر تحميل الدروس: $e')),
       );
-    }
+    });
+    _exceptionsSub = LessonsService.watchExceptions().listen((ex) {
+      if (!mounted) return;
+      setState(() => _exceptions = ex);
+    });
   }
 
   List<LessonOccurrence> get _weekOccurrences => occurrencesBetween(
@@ -88,7 +100,6 @@ class _HomePageState extends State<HomePage> {
       isEditing: isEditing,
       onSubmit: customSubmit ?? (data) async {
         await LessonsService.createLesson(data);
-        await _refresh();
       },
     );
   }
@@ -121,7 +132,6 @@ class _HomePageState extends State<HomePage> {
                       : data.locationDetails,
                   notes: data.notes.isEmpty ? null : data.notes,
                 );
-                await _refresh();
               },
             );
             break;
@@ -132,7 +142,6 @@ class _HomePageState extends State<HomePage> {
               isEditing: true,
               customSubmit: (data) async {
                 await LessonsService.updateLesson(occ.lessonId, data);
-                await _refresh();
               },
             );
             break;
@@ -146,7 +155,6 @@ class _HomePageState extends State<HomePage> {
                 date: occ.date,
                 isDeleted: true,
               );
-              await _refresh();
             }
             break;
           case LessonAction.deleteAll:
@@ -155,7 +163,6 @@ class _HomePageState extends State<HomePage> {
                 'هل أنت متأكد أنك تريد حذف هذا الدرس وجميع مواعيده؟');
             if (ok) {
               await LessonsService.deleteLesson(occ.lessonId);
-              await _refresh();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('تم حذف الدرس')),
@@ -236,9 +243,8 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      floatingActionButton: AnimatedPadding(
-        duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.only(bottom: 56),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
         child: SizedBox(
           width: 62,
           height: 62,
@@ -268,7 +274,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: _buildBottomNav(isDark),
     );
   }
@@ -368,7 +374,6 @@ class _HomePageState extends State<HomePage> {
               selected: _tab == HomeTab.week,
               onTap: () => setState(() => _tab = HomeTab.week),
             ),
-            const SizedBox(width: 70), // space for FAB
             _navItem(
               icon: Icons.list_alt_outlined,
               activeIcon: Icons.list_alt,
